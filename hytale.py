@@ -1,4 +1,5 @@
 from typing import Any, List
+import json
 import glob
 import aiohttp
 import urllib.request
@@ -97,4 +98,19 @@ async def get_all_videos(post: Post) -> list:
         except Exception as e:
             ...
     
+    return result
+
+async def get_media_clips() -> list:
+    request = urllib.request.Request("https://hytale.com/media", headers=headers)
+    html = urllib.request.urlopen(request).read()
+    soup = BeautifulSoup(html, "html.parser")
+    
+    raw_media = soup.select_one("script:-soup-contains('clips')").string
+    media = json.loads(raw_media[raw_media.index("["):raw_media.rindex("]")+1])[0]['media']
+
+    clips = media['clips']
+
+    result = list()
+    for clip in clips:
+        result.append(clip['src'])
     return result
