@@ -16,36 +16,12 @@ class Post:
     def url(self) -> str:
         yy = int(self.publishedAt[:4])
         mm = int(self.publishedAt[5:7])
-        slug = self.slug
-        return f"https://hytale.com/news/{yy}/{mm}/{slug}"
-    
-    def cover_url(self) -> str:
-        return f"https://cdn.hytale.com/variants/blog_cover_{self.coverImage['s3Key']}"
+        return f"https://hytale.com/news/{yy}/{mm}/{self.slug}"
 
     def __init__(self, data: dict):
         self.title = data['title']
         self.publishedAt = data['publishedAt']
         self.slug = data['slug']
-        self.author = data['author']
-        self.featured = data['featured']
-        self.bodyExcerpt = data['bodyExcerpt']
-        self.tags = data['tags']
-        self._id = data['_id'] 
-        self.coverImage = data['coverImage']
-
-async def get_post_info(post: Post):
-    title = f"Title: \"***{post.title}***\" \n"
-    bodyExcerpt = f"BodyExcerpt: \"***{post.bodyExcerpt}***\" \n"
-    author = f"Author: \"***{post.author}***\" \n"
-    publishedAt = f"CreatedAt: \"***{post.publishedAt}***\" \n"
-    featured = f"Featured: \"***{post.featured}***\" \n"
-    tags = f"Tags: **{post.tags}** \n"
-    id = f"Id: \"***{post._id}***\" \n"
-    link = f"Link: {post.url()} \n"
-
-    context = title + bodyExcerpt + author + publishedAt + featured + tags + id + link
-
-    return context
 
 async def get_all_posts() -> List[Post]:
     url = 'https://hytale.com/api/blog/post/published'
@@ -55,14 +31,6 @@ async def get_all_posts() -> List[Post]:
             result = await response.json()
 
     return [Post(data) for data in result]
-
-async def get_latest_post() -> Post:
-    posts = await get_all_posts()
-    return posts[0]
-
-async def get_post_by_id(post_id: int) -> Post:
-    posts = await get_all_posts()
-    return posts[len(posts) - post_id]
 
 async def download_video(id: str):
     print(f"Downloading {id}...", end=' ')
