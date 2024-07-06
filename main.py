@@ -6,10 +6,13 @@ async def download_all():
     for post in posts:
         print("Fetch video ids...")
         print(post.title)
-        video_ids.extend(await hytale.get_all_videos(post))
+        content = await hytale.get_all_videos(post)
+        print(f"Post clips: {content}")
+        video_ids.extend(id for id in content if id not in video_ids)
     # get clips from /media
-    video_ids.extend(await hytale.get_media_clips())
+    video_ids.extend(id for id in await hytale.get_media_clips() if id not in video_ids)
 
+    print(video_ids)
     for id in video_ids:
         await hytale.download_video(id)
 

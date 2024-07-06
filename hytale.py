@@ -65,11 +65,14 @@ async def get_post_by_id(post_id: int) -> Post:
     return posts[len(posts) - post_id]
 
 async def download_video(id: str):
+    print(f"Downloading {id}...", end=' ')
     yt_opts = {'verbose': True,'outtmpl': 'clips/%(title)s.%(ext)s'}
 
     files = glob.glob(f"{id}.*", root_dir="./clips")
     if files:
+        print("Already installed, skip")
         return files[0]
+    print()
 
     with yt_dlp.YoutubeDL(yt_opts) as ydl:
         ydl.download([f'https://iframe.videodelivery.net/{id}'])
