@@ -2,35 +2,41 @@ import asyncio, hytale
 
 async def download_all():
     # get all posts
+    print("Proceeding to download all data", end='\n\n')
+    print("Getting all posts data...")
     posts = await hytale.get_all_posts()
 
-    # get clips from all posts
-    print("Downloading clips...")
-    clips_ids = list()
-    for post in posts:
-        print(f"Fetch clips ids in {post.title}...")
-        content = await hytale.get_all_clips(post)
-        print(f"Post clips: {content}")
-        clips_ids.extend(id for id in content if id not in clips_ids)
-    # get clips from /media
-    clips_ids.extend(id for id in await hytale.get_media_clips() if id not in clips_ids)
+    print("Getting all media data...")
+    media = await hytale.get_media()
 
-    for id in clips_ids:
-        await hytale.download_clip(id)
-
-    # get images from all posts
-    print("Dowloading images...")
-    images_url = list()
+    print("Downloading all posts data...")
     for post in posts:
-        print(f"Fetch images in {post.title}...")
-        content = await hytale.get_all_images(post)
-        print(f"Post images: {content}")
-        images_url.extend(url for url in content if url not in images_url)
-    # get images from /media
-    images_url.extend(url for url in await hytale.get_media_images() if url not in images_url)
+        print(f"Downloading content from {post}...", end=' ')
+
+        clips = post.get_clips()
+        images = post.get_images()
+        
+        print(f"Found {len(clips)} clips and {len(images)} images:")
+        print("Downloading clips...")
+        for id in clips:
+            await hytale.download_clip(id)
+        print("Downloading images...")
+        for url in images:
+            await hytale.download_image(url)
+        print()
+
+    print("Downloading all media data...")
+    clips = media['clips']
+    images = media['screenshots'] + media['conceptArt']
     
-    for url in images_url:
-        await hytale.download_image(url)
+    print("Downloading clips...")
+    for clip in clips:
+        await hytale.download_clip(clip['src'])
+    
+    print("Downloading images...")
+    for img in images:
+        await hytale.download_image(f"https://cdn.hytale.com/{img['src']}")
+
 
 def main():
     asyncio.run(download_all())

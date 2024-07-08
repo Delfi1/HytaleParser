@@ -13,26 +13,65 @@ headers = {
     'User-Agent':
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
 }
+    
 
 class Post:
-    def url(self) -> str:
-        yy = int(self.publishedAt[:4])
-        mm = int(self.publishedAt[5:7])
-        return f"https://hytale.com/news/{yy}/{mm}/{self.slug}"
+    def __init__(self, content: str):
+        self.title = content['title']
+        self.slug = content['slug']
+        self.body = BeautifulSoup(content['body'], "html.parser")
+    
+    # get all post clips uuids
+    def get_clips(self) -> List[str]:
+        result = list()
 
-    def __init__(self, data: dict):
-        self.title = data['title']
-        self.publishedAt = data['publishedAt']
-        self.slug = data['slug']
+        for element in self.body:
+            try:
+                if element['class'][0] == "video-container":
+                    stream = element.find("stream")
+
+                    if stream:
+                        result.append(stream["src"])
+            except Exception as e: ...
+    
+        return result
+    
+    # get all post images links
+    def get_images(self) -> List[str]:
+        imgs = self.body.find_all("img")
+
+        result = list()
+        for img in imgs:
+            try:
+                result.append(img['data-src'])
+            except Exception as e: ...
+
+        return result
+    
+    def __str__(self) -> str:
+        return self.title
+
+async def get_post_by_slug(slug: str) -> Post:
+    url = f'https://hytale.com/api/blog/post/slug/{slug}'
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, headers=headers) as response:
+            content = await response.json()
+    
+    print(f"Fething post {content['title']}...")
+
+    return Post(content)
 
 async def get_all_posts() -> List[Post]:
     url = 'https://hytale.com/api/blog/post/published'
 
     async with aiohttp.ClientSession() as session:
-        async with session.get(url, headers=headers) as response:
-            result = await response.json()
+            async with session.get(url, headers=headers) as response:
+                response = await response.json()
 
-    return [Post(data) for data in result]
+    slugs = [post['slug'] for post in response]
+
+    return [await get_post_by_slug(slug) for slug in slugs]
 
 async def download_clip(id: str):
     print(f"Downloading {id}...", end=' ')
@@ -66,46 +105,6 @@ async def download_image(url: str):
         handle.write(data.content)
 
     print("Success")
-
-async def get_all_clips(post: Post) -> list:
-    url = post.url()
-
-    request = urllib.request.Request(url, headers=headers)
-    html = urllib.request.urlopen(request).read()
-    soup = BeautifulSoup(html, "html.parser")
-
-    body = soup.find("div", {"class": "post__body"})
-    
-    result = list()
-
-    for element in body:
-        try:
-            if element['class'][0] == "video-container":
-                stream = element.find("stream")
-
-                if stream:
-                    result.append(stream["src"])
-        except Exception as e: ...
-    
-    return result
-
-async def get_all_images(post: Post) -> list:
-    url = post.url()
-
-    request = urllib.request.Request(url, headers=headers)
-    html = urllib.request.urlopen(request).read()
-    soup = BeautifulSoup(html, "html.parser")
-
-    body = soup.find("div", {"class": "post__body"})
-    imgs = body.find_all("img")
-
-    result = list()
-    for img in imgs:
-        try:
-            result.append(img['data-src'])
-        except Exception as e: ...
-
-    return result
 
 async def get_media() -> list:
     request = urllib.request.Request("https://hytale.com/media", headers=headers)
