@@ -13,6 +13,19 @@ headers = {
     'User-Agent':
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
 }
+
+class MyLogger:
+    def debug(self, msg):
+        pass
+
+    def info(self, msg):
+        pass
+
+    def warning(self, msg):
+        pass
+
+    def error(self, msg):
+        print(msg)
     
 
 class Post:
@@ -75,19 +88,16 @@ async def get_all_posts() -> List[Post]:
 
 async def download_clip(id: str):
     print(f"Downloading {id}...", end=' ')
-    yt_opts = {'verbose': True,'outtmpl': 'clips/%(title)s.%(ext)s'}
+    yt_opts = {'verbose': True,'outtmpl': 'clips/%(title)s.%(ext)s', 'logger': MyLogger()}
 
     files = glob.glob(f"{id}.*", root_dir="./clips")
     if files:
         print("Already installed, skip")
-        return files[0]
-    print()
 
     with yt_dlp.YoutubeDL(yt_opts) as ydl:
         ydl.download([f'https://iframe.videodelivery.net/{id}'])
     
-    file = glob.glob(f"{id}.*", root_dir="./clips")
-    return file[0]
+    print("Success")
     
 async def download_image(url: str):
     img = url[url.rfind('/')+1:]
