@@ -7,6 +7,7 @@ import aiohttp
 import urllib.request
 import yt_dlp
 from bs4 import BeautifulSoup
+from pytube import extract
 
 # response headers
 headers = {
@@ -48,6 +49,19 @@ class Post:
             except Exception as e: ...
     
         return result
+        
+    def get_youtube_vids(self) -> List[str]:
+        result = list()
+        
+        for element in self.body:
+            try:
+                if element['class'][0] == "video-container":
+                    video = element.find("div", {'class': 'ql-video'})
+                    
+                    result.append(video["src"])
+            except Exception as e: ...
+    
+        return result
     
     # get all post images links
     def get_images(self) -> List[str]:
@@ -76,7 +90,7 @@ async def get_post_by_slug(slug: str) -> Post:
     return Post(content)
 
 async def get_all_posts() -> List[Post]:
-    url = 'https://hytale.com/api/blog/post/published'
+    url = 'https://hytale.com/api/blog/post/published?limit=1000'
 
     async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=headers) as response:
@@ -98,6 +112,21 @@ async def download_clip(id: str):
         ydl.download([f'https://iframe.videodelivery.net/{id}'])
     
     print("Success")
+
+async def download_video(url: str):
+    id = extract.video_id(url)
+    print(f"Downloading {id}...", end=' ')
+    yt_opts = {'verbose': True,'outtmpl': f'clips/videos/{id}.%(ext)s', 'logger': MyLogger()}
+
+    files = glob.glob(f"{id}.*", root_dir="./clips/videos")
+    if files:
+        print("Already installed, skip")
+
+    try:
+        with yt_dlp.YoutubeDL(yt_opts) as ydl:
+            ydl.download([url])
+            print("Success")
+    except Exception as e: print(f"Error: {e}")
     
 async def download_image(url: str):
     img = url[url.rfind('/')+1:]
