@@ -5,3 +5,4 @@ disnake==2.9.2
 html2text==2024.2.26
 urllib3==2.2.2
 yt-dlp==2024.5.27
+pytube==15.0.0
