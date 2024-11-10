@@ -14,12 +14,16 @@ async def download_all():
         print(f"Downloading content from {post}...", end=' ')
 
         clips = post.get_clips()
+        videos = post.get_youtube_vids()
         images = post.get_images()
         
-        print(f"Found {len(clips)} clips and {len(images)} images:")
+        print(f"Found {len(clips)} clips, {len(videos)} youtube videos and {len(images)} images:")
         print("Downloading clips...")
         for id in clips:
             await hytale.download_clip(id)
+        print("Downloading youtube videos...")
+        for url in videos:
+            await hytale.download_video(url)
         print("Downloading images...")
         for url in images:
             await hytale.download_image(url)
@@ -38,8 +42,8 @@ async def download_all():
         await hytale.download_image(f"https://cdn.hytale.com/{img['src']}")
 
 
-def main():
-    asyncio.run(download_all())
+async def main():
+    await download_all()
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
