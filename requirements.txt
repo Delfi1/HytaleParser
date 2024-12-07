@@ -1,5 +1,7 @@
 ffmpeg>=1.4
 aiohttp>=3.9.5
+requests>=2.32.3
+click>=8.1.7
 beautifulsoup4==4.12.3
 html2text==2024.2.26
 urllib3==2.2.2

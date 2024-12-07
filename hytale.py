@@ -96,7 +96,8 @@ async def get_all_posts() -> List[Post]:
             async with session.get(url, headers=headers) as response:
                 response = await response.json()
 
-    slugs = [post['slug'] for post in response]
+    # get all posts from first to last
+    slugs = reversed([post['slug'] for post in response])
 
     return [await get_post_by_slug(slug) for slug in slugs]
 
