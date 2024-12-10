@@ -1,24 +1,21 @@
 import click, asyncio, hytale
 
 async def run(main: bool, fanarts: bool, media: bool):
-    posts = await hytale.get_all_posts()
-    
-    for i in range(len(posts)):
-        slug = posts[i].slug
-        print(f"p({i}) = {slug}")
+    slugs = await hytale.get_all_posts()
 
     # Posts id's
     fp = set([12, 22, 33])
-    mp = set(range(len(posts))).difference(fp)
-    
+    mp = set(range(len(slugs))).difference(fp)
+    print(mp)
+
     total = list()
     if main: total += mp
     if fanarts: total += fp
     total = sorted(total)
 
-    print("Downloading posts")
-    for n in total:
-        post = posts[n]
+    for t in total:
+        slug = slugs[t]
+        post = await hytale.get_post_by_slug(slug)
         print(f"Downloading content from {post}...", end=' ')
 
         clips = post.get_clips()

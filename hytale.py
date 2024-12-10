@@ -30,7 +30,7 @@ class MyLogger:
     
 
 class Post:
-    def __init__(self, content: str):
+    def __init__(self, content: dict):
         self.title = content['title']
         self.slug = content['slug']
         self.body = BeautifulSoup(content['body'], "html.parser")
@@ -84,12 +84,10 @@ async def get_post_by_slug(slug: str) -> Post:
     async with aiohttp.ClientSession() as session:
         async with session.get(url, headers=headers) as response:
             content = await response.json()
-    
-    print(f"Parsing post {content['title']}...")
 
     return Post(content)
 
-async def get_all_posts() -> List[Post]:
+async def get_all_posts() -> List[str]:
     url = 'https://hytale.com/api/blog/post/published?limit=1000'
 
     async with aiohttp.ClientSession() as session:
@@ -99,7 +97,7 @@ async def get_all_posts() -> List[Post]:
     # get all posts from first to last
     slugs = reversed([post['slug'] for post in response])
 
-    return [await get_post_by_slug(slug) for slug in slugs]
+    return list(slugs)
 
 async def download_clip(id: str):
     print(f"Downloading {id}...", end=' ')
