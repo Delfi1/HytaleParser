@@ -106,6 +106,7 @@ async def download_clip(id: str):
     files = glob.glob(f"{id}.*", root_dir="./clips")
     if files:
         print("Already installed, skip")
+        return
 
     with yt_dlp.YoutubeDL(yt_opts) as ydl:
         ydl.download([f'https://iframe.videodelivery.net/{id}'])
@@ -120,6 +121,7 @@ async def download_video(url: str):
     files = glob.glob(f"{id}.*", root_dir="./clips/videos")
     if files:
         print("Already installed, skip")
+        return
 
     try:
         with yt_dlp.YoutubeDL(yt_opts) as ydl:
