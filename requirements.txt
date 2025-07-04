@@ -1,9 +1,9 @@
-ffmpeg>=1.4
 aiohttp>=3.9.5
 requests>=2.32.3
 click>=8.1.7
 beautifulsoup4==4.12.3
 html2text==2024.2.26
 urllib3==2.2.2
-yt-dlp>=2024.5.27
+yt-dlp>=2025.5.22
+imageio-ffmpeg>=0.6.0
 pytube==15.0.0

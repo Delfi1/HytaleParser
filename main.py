@@ -56,7 +56,7 @@ async def run(main: bool, fanarts: bool, media: bool, posts: list):
 @click.command()
 @click.option("--main", default=True, help="Download main posts data")
 @click.option("--fanarts", default=False, help="Download fanarts posts data")
-@click.option("--media", default=True, help="Download ./media data")
+@click.option("--media", default=True, help="Download /media data")
 @click.option("--posts", default=str(), help="Overrides \"main\" and \"fanarts\". Example: \"[0, 1, 51]\"")
 def main(main: bool, fanarts: bool, media: bool, posts: str):
     try: posts = ast.literal_eval(posts)

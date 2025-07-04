@@ -1,11 +1,11 @@
 import os
-from typing import Any, List
+from typing import List
 import requests
 import json
 import glob
 import aiohttp
 import urllib.request
-import yt_dlp
+import yt_dlp, imageio_ffmpeg
 from bs4 import BeautifulSoup
 from pytube import extract
 
@@ -15,7 +15,7 @@ headers = {
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
 }
 
-class MyLogger:
+class Logger:
     def debug(self, msg):
         pass
 
@@ -88,7 +88,7 @@ async def get_post_by_slug(slug: str) -> Post:
     return Post(content)
 
 async def get_all_posts() -> List[str]:
-    url = 'https://hytale.com/api/blog/post/published?limit=1000'
+    url = 'https://hytale.com/api/blog/post/published'
 
     async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=headers) as response:
@@ -101,22 +101,36 @@ async def get_all_posts() -> List[str]:
 
 async def download_clip(id: str):
     print(f"Downloading {id}...", end=' ')
-    yt_opts = {'verbose': True,'outtmpl': 'clips/%(title)s.%(ext)s', 'logger': MyLogger()}
+    ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
+
+    opts = {
+        'outtmpl': 'clips/%(title)s.%(ext)s',
+        'ffmpeg_location': ffmpeg,
+        'format': 'bestvideo+bestaudio',
+        'logger': Logger()
+    }
 
     files = glob.glob(f"{id}.*", root_dir="./clips")
     if files:
         print("Already installed, skip")
         return
 
-    with yt_dlp.YoutubeDL(yt_opts) as ydl:
-        ydl.download([f'https://iframe.videodelivery.net/{id}'])
+    with yt_dlp.YoutubeDL(opts) as ytdlp:
+        ytdlp.download([f"https://iframe.videodelivery.net/{id}"])
     
     print("Success")
 
 async def download_video(url: str):
     id = extract.video_id(url)
     print(f"Downloading {id}...", end=' ')
-    yt_opts = {'verbose': True,'outtmpl': f'clips/videos/{id}.%(ext)s', 'logger': MyLogger()}
+    ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
+
+    opts = {
+        'outtmpl': 'clips/videos/%(title)s.%(ext)s',
+        'ffmpeg_location': ffmpeg,
+        'format': 'bestvideo+bestaudio',
+        'logger': Logger()
+    }
 
     files = glob.glob(f"{id}.*", root_dir="./clips/videos")
     if files:
@@ -124,7 +138,7 @@ async def download_video(url: str):
         return
 
     try:
-        with yt_dlp.YoutubeDL(yt_opts) as ydl:
+        with yt_dlp.YoutubeDL(opts) as ydl:
             ydl.download([url])
             print("Success")
     except Exception as e: print(f"Error: {e}")

@@ -1,4 +1,6 @@
-/clips
 /__pycache__
 /.venv
+/build
+/clips
 /images
+/dist
