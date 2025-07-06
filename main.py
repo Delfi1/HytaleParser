@@ -20,8 +20,13 @@ async def run(main: bool, fanarts: bool, media: bool, posts: list):
             continue
 
         slug = slugs[t]
-        post = await hytale.get_post_by_slug(slug)
-        print(f"Downloading content from {post}...", end=' ')
+        
+        # If post can't be loaded
+        try:
+            post = await hytale.get_post_by_slug(slug)
+            print(f"Downloading content from {post}...", end=' ')
+        except:
+            continue
 
         clips = post.get_clips()
         videos = post.get_youtube_vids()
